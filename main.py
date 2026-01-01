@@ -57,8 +57,9 @@ def train_new_model():
     # Prepare dataset
     apple_ds = prepare_dataset(apple_ds, shuffle=True)
     
-    # Create and compile model
-    model = create_model(num_classes=len(label_names))
+    # Create and compile model with ONLY 4 apple classes
+    from config.config import APPLE_CLASSES
+    model = create_model(num_classes=len(APPLE_CLASSES))  # Changed to use APPLE_CLASSES length
     model = compile_model(model, learning_rate=LEARNING_RATE)
     
     # Display model summary
@@ -96,9 +97,9 @@ def predict_disease(image_name=None, use_random=False, use_random_dataset=False,
     # Load model
     model = load_trained_model(MODEL_SAVE_PATH)
     
-    # Load label names
-    dataset, info = load_dataset()
-    label_names = get_label_names(info)
+    # Use only APPLE_CLASSES for predictions
+    from config.config import APPLE_CLASSES
+    label_names = APPLE_CLASSES  # Use only apple classes
     
     image_path = None
     true_label = None
@@ -106,8 +107,11 @@ def predict_disease(image_name=None, use_random=False, use_random_dataset=False,
     # Handle random dataset selection
     if use_random_dataset:
         print("Selecting random image from dataset...")
+        dataset, info = load_dataset()
+        full_label_names = get_label_names(info)
+        
         train_ds = dataset['train']
-        apple_ds = filter_apple_classes(train_ds, label_names)
+        apple_ds = filter_apple_classes(train_ds, full_label_names)
         apple_ds = prepare_dataset(apple_ds, shuffle=True)
         
         image_path, true_label = get_random_image_from_dataset(apple_ds, label_names)
